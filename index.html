@@ -1,0 +1,1346 @@
+<html>
+<head>
+    <title>Positioning. TSG App
+    </title>
+    <script src="d3.v7.min.js"></script>
+    <!-- here can be set the source from the web, but because of security requirements, the library should be accessible locally -->
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            font-family: sans-serif;
+            width: 100%;
+            height: 100%;
+            padding: 5px;
+            margin: 0;
+            font-size: 12pt;
+        }
+
+        h1 {
+            font-weight: 100;
+        }
+
+        h2 {
+            line-height: 100%;
+            margin: 5px 0 0;
+        }
+
+        .usedCode {
+            font-family: monospace;
+        }
+
+        .flex {
+            display: flex;
+            flex-direction: row;
+            justify-content: flex-start;
+            align-items: flex-start;
+        }
+
+        .flex--vertical {
+            flex-direction: column;
+        }
+
+        .row {
+            display: flex;
+            flex-direction: row;
+            justify-content: flex-start;
+            align-items: center;
+            width: 100%;
+            margin: 5px 0;
+        }
+
+        .half-width {
+            width: 50%;
+            padding: 15px;
+        }
+
+        .full-width {
+            width: 50%;
+            padding: 15px;
+        }
+
+        svg {
+            outline: solid 1px black;
+        }
+
+        input[type="checkbox"] {
+            display: block;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: #cca92c;
+            cursor: pointer;
+            box-shadow: 0 0 0 rgba(204, 169, 44, 0.4);
+            animation: pulse 2s infinite;
+            align-self: center;
+            margin-right: 10px;
+        }
+
+        input[type="checkbox"]:hover,
+        input[type="checkbox"]:checked {
+            animation: none;
+        }
+
+        @-webkit-keyframes pulse {
+            0% {
+                -webkit-box-shadow: 0 0 0 0 rgba(204, 169, 44, 1);
+            }
+            70% {
+                -webkit-box-shadow: 0 0 0 10px rgba(204, 169, 44, 0);
+            }
+            100% {
+                -webkit-box-shadow: 0 0 0 0 rgba(204, 169, 44, 0);
+            }
+        }
+
+        @keyframes pulse {
+            0% {
+                -moz-box-shadow: 0 0 0 0 rgba(204, 169, 44, 1);
+                box-shadow: 0 0 0 0 rgba(204, 169, 44, 0.4);
+            }
+            70% {
+                -moz-box-shadow: 0 0 0 10px rgba(204, 169, 44, 0);
+                box-shadow: 0 0 0 10px rgba(204, 169, 44, 0);
+            }
+            100% {
+                -moz-box-shadow: 0 0 0 0 rgba(204, 169, 44, 0);
+                box-shadow: 0 0 0 0 rgba(204, 169, 44, 0);
+            }
+        }
+
+        @media (max-width: 1000px) {
+            .flex:not(.flex--fixed) {
+                display: flex;
+                flex-direction: column;
+            }
+        }
+
+        .half-width {
+            /* width: 50%; */
+            width: 550px;
+            height: 400px;
+            padding: 0px;
+            overflow: scroll;
+            border: solid 1px brown;
+        }
+
+        svg {
+            outline: solid 1px black;
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+
+        input {
+            padding: 5px;
+            margin: 5px;
+        }
+
+        button, input[type = "button"] {
+            margin: 5px;
+        }
+
+        .fileArea {
+            width: 730px;
+        }
+
+        .imageArea, .fileArea {
+            display: flex; /* or inline-flex */
+            flex-direction: row;
+            padding: 7px;
+        }
+
+        .controls {
+            max-width: 275px;
+            margin-left: 10px;
+            height: 40px;
+            cursor: pointer;
+        }
+
+
+        .controls.short {
+            width: 75px;
+
+        }
+
+        .controls.scale {
+            width: 30px;
+            height: 30px;
+            margin: 5px;
+
+        }
+
+        fieldset {
+            margin-bottom: 10px;
+            margin-top: 10px;
+            width: 855px;
+        }
+
+        label {
+            display: flex;
+            align-self: center;
+        }
+
+        .fscale {
+            width: 130px;
+            height: 100px;
+            margin-left: 20px;
+            padding: 20px;
+        }
+
+        .resultRow {
+            border-style: dotted;
+            margin-top: 5px;
+            max-width: 855px;
+        }
+
+        .resultRow {
+            display: flex;
+            align-items: stretch;
+        }
+
+        .resultelem {
+            margin: 5px;
+        }
+
+        .info {
+            border: none;
+
+        }
+
+        .resultRow:hover {
+            background-color: darkseagreen;
+        }
+
+        .pointerSign {
+            cursor: pointer;
+        }
+
+        .tab {
+            overflow: hidden;
+            border: 1px solid #ccc;
+            background-color: #f1f1f1;
+            width: 855px;
+        }
+
+        /* Style the buttons that are used to open the tab content */
+        .tab button {
+            background-color: inherit;
+            float: left;
+            border: none;
+            outline: none;
+            cursor: pointer;
+            padding: 14px 16px;
+            transition: 0.3s;
+        }
+
+        /* Change background color of buttons on hover */
+        .tab button:hover {
+            background-color: #ddd;
+        }
+
+        /* Create an active/current tablink class */
+        .tab button.active {
+            background-color: #ccc;
+        }
+
+        /* Style the tab content */
+        .tabcontent {
+            display: none;
+            padding: 0px 0px;
+            border: 0px solid #ccc;
+            border-top: none;
+        }
+
+        .tabcontent, #configurationDiv {
+            animation: fadeEffect 1s; /* Fading effect takes 1 second */
+        }
+
+        /* Go from zero to full opacity */
+        @keyframes fadeEffect {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        fieldset {
+            max-width: 855px;
+        }
+
+
+        table, th, td {
+            border: 1px solid black;
+        }
+
+        th {
+            cursor: pointer;
+        }
+
+
+        .resultTable {
+            max-width: 855px;
+
+            border-collapse: collapse;
+            margin: 25px 0;
+            font-size: 0.9em;
+            font-family: sans-serif;
+            min-width: 400px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .resultTable tr th {
+            background-color: #009879;
+            color: #ffffff;
+            text-align: left;
+        }
+
+
+        .resultTable th,
+        .resultTable td {
+            padding: 12px 15px;
+        }
+
+        .resultTable tbody tr {
+            border-bottom: 1px solid #dddddd;
+        }
+
+
+        .resultTable tbody tr:nth-of-type(even) {
+            background-color: #f3f3f3;
+        }
+
+        .resultTable tbody tr:nth-of-type(even):hover {
+            background-color: #e6e3e3;
+        }
+
+        .resultTable tbody tr:nth-of-type(odd):hover {
+            background-color: #fbfbfb;
+        }
+
+        .resultTable tbody tr:last-of-type {
+            border-bottom: 2px solid #009879;
+        }
+
+
+        #searchResults {
+            max-width: 855px;
+            max-height: 255px;
+            overflow: auto;
+            margin-bottom: 5px;
+        }
+
+        .resultTable tbody tr.active-row {
+            font-weight: bold;
+            color: #009879;
+        }
+
+
+        .resultTable tr > td:last-of-type {
+            cursor: pointer;
+            text-align: center;
+            color: red;
+        }
+    </style>
+</head>
+<body>
+<h1>Positioning. TSG App</h1>
+
+<div>
+    <fieldset>
+        <legend onclick="configurationDisplayToggle()" class="pointerSign">Konfiguration<span
+                id="configurationDisplaySign">▲</span></legend>
+        <div id="configurationDiv">
+
+            <div class="fileArea" id="fileArea">
+                <label for="Import">Initializieren:</label>
+                <input type="file" id="Import" name="Import" onchange="importData()" class="controls"/>
+                <br/>
+                <label for="exportFileName">Exportieren:</label>
+                <input type="text" id="exportFileName" placeholder="Dateiname" value=""/>
+                <button type="Button" value="" id="exportData" onclick="exportData()" class="controls">Herunterladen
+                </button>
+                <br/>
+
+            </div>
+
+            <input type="text" id="fileInfo" class="info" value="" readonly size=40/>
+        </div>
+    </fieldset>
+</div>
+<!-- Tab links -->
+<div class="tab">
+    <button class="tablinks" onclick="openTabArea(event, 'searchDiv')">Suchen</button>
+    <button class="tablinks" onclick="openTabArea(event, 'areaDiv'); ">Bereich hinzuzufügen</button>
+    <button class="tablinks" onclick="openTabArea(event, 'deviceDiv')">Gerät hinzuzufügen</button>
+</div>
+
+
+<div class="container">
+    <div id="areaDiv" class="tabcontent">
+        <fieldset>
+            <legend>Bereich hinzuzufügen<span id="areaDisplaySign" onclick="areaDisplayToggle()"
+                                              class="pointerSign"></span></legend>
+
+            <label for="myfile">Datei</label>
+            <input type="file" id="myfile" name="myfile" onchange="changeFile()"/>
+            <br/>
+            <label for="type">Name</label>
+            <input type="text" id="type" name="type" placeholder="Name des Bereiches"/>
+            <br/>
+            <label for="myfile">Los geht's</label>
+            <input type="submit" id="submit" name="submit" onclick="submitImageAddition()"/>
+        </fieldset>
+    </div>
+    <div id="deviceDiv" class="tabcontent">
+        <fieldset>
+            <legend>Gerät hinzuzufügen<span id="deviceAddDisplaySign" onclick="deviceAddDisplayToggle()"
+                                            class="pointerSign"></span></legend>
+
+            <input type="text" readonly value="Bereich"></input>
+            <select id="area" name="area" onchange="changeImageSource()" width="30">
+                <option value="1.jpg">Image 1</option> <!-- by default, but useless. todo: delete -->
+                <option value="2.jpg">Image 2</option>
+            </select>
+            <br/>
+            <div id="properties">
+                <input type="text" id="propName0" value="Name" readonly/>
+                <input type="text" id="propValue0" value="" placeholder="Wert"/>
+                <input type="button" id="addProp" value="Eigenschaft hinzuzufügen " onclick="addProperty()"/>
+                <input type="button" id="" value="Neue Eingabe" onclick="resetAdd()"/>
+                <br/>
+            </div>
+            <div>
+                <input type="button" id="addObject" value="Hinzuzufügen" onclick="addObject()"/>
+            </div>
+        </fieldset>
+    </div>
+    <div id="searchDiv" class="tabcontent">
+        <fieldset>
+            <legend>Suchen<span id="searchDisplaySign" onclick="searchDisplayToggle()" class="pointerSign"></span>
+            </legend>
+
+            <div id="propertiesSearch">
+                <input type="text" id="propName0Search" value="" placeholder="Eigenschaft"/>
+                <input type="text" id="propValue0Search" value="" placeholder="Wert"/>
+                <input type="button" id="addPropSearch" value="Eigenschaft hinzuzufügen" onclick="addPropertySearch()"/>
+				 <input type="button" id="resetSearch" value="Neue Suche" onclick="resetSearch()"/>
+                <br/>
+            </div>
+            <div>
+                <input type="button" id="search" value="Suchen" onclick="search()"/>
+            </div>
+
+        </fieldset>
+        <div id="searchResultsArea">
+            <fieldset>
+                <legend>Suchergebnisse<span id="searchResultDisplaySign" onclick="searchResultDisplayToggle()"
+                                            class="pointerSign"></span></legend>
+                <div id="searchResults">
+                </div>
+
+            </fieldset>
+        </div>
+    </div>
+    <div class="imageArea" id="imageArea">
+        <div class="flex">
+            <div class="half-width" id="half-width">
+                <svg width="1500px" height="1500px" version="1.1" xmlns="http://www.w3.org/2000/svg"
+                     xmlns:xlink="http://www.w3.org/1999/xlink" id="svg"></svg>
+            </div>
+        </div>
+        <fieldset class="fscale">
+            <legend>Maßstab</legend>
+            <div>
+                <button type="Button" value="inc" onclick="inc()" class="controls scale">+</button>
+                <button type="Button" value="dec" onclick="dec()" class="controls scale">-</button>
+            </div>
+        </fieldset>
+        <!-- <fieldset class="fscale">
+             <legend>Kontrolle</legend>
+             <div id="clearArea">
+                 <input type="button" value="Neu" onclick="reloadPage()" class="controls short"/>
+                 <br/>
+             </div>
+         </fieldset> -->
+    </div>
+</div>
+
+
+<!--
+brauch keine Zugriffe. Also mann kan im Ordener kopieren und zu Ordner berechtigungen nur spezifischen Leut geben
+Leichtweigt.
+Flexible - jeder kann verandern.
+Open source
+
+
+
+beseitigen extra Informationen
+Mitarbeiter könne zusamen arbaiten - besser Team
+
+Flexible, jeder kann verändern und etwas hinzugefügen
+Verschiedene Berechtigungen 
+Strakerer Kontrolle - Format, Type von eingegebenen Daten
+
+individualle Konfigurationen. 
+
+folgende Automatization - Daten aus MS Applicationne nd laüfende App wie EARS, können angezeugt werden 
+Auf grund von unterschiedlichen Berichten 
+Verbesserte Zeit von Arbeit, wenigerer Aufwand für die gleiche Arbeit.
+USer frendly Interface. Alle Fehler zu zeigen, formatieren. 
+ Parameter sebst zu erdenken
+ 
+ selbst images hinzufügen.
+ 
+-->
+<script>
+
+
+    var output = [];
+    var scale = 1;
+    var props = 0;
+    var searchProperties = 0;
+    var json = {};
+    var newObject = true;
+    var info = [];
+    var changeBGTrigger = true;
+    var img = new Image();
+    var searchResult = [];
+    var svg = document.getElementById("svg");
+    var point = svg.createSVGPoint();
+
+    var table = document.createElement("table");
+
+
+resetAdd= function (){
+
+}
+
+resetSearch= function (){
+			for (let jj = searchProperties; jj >0; jj--) {
+                    let propNameTemp = "propName" + jj + "Search";
+                    let propValueTemp = "propValue" + jj + "Search";
+                    if (document.getElementById([propNameTemp]) && document.getElementById([propValueTemp])) {
+                      document.getElementById([propNameTemp]).remove();
+					document.getElementById([propValueTemp]).remove();
+                    } else console.log("no element for index: " + propNameTemp);
+				}
+				    document.querySelectorAll("#propertiesSearch br").forEach(function (key){
+						key.remove();
+					})
+				 document.getElementById("propName0Search").value = "";
+				 document.getElementById("propValue0Search").value = "";
+				 searchProperties = 0;
+					
+}
+
+    //todo: current children to loop
+    addCircles = function () {
+
+
+        children = svg.querySelectorAll("*");
+        for (i = 0; i < children.length; i++) {
+            svg.removeChild(children[i]);
+        }
+
+        for (i = 0; i < info.length; i++) {
+            if (!info[i].coords || !info[i].visible || info[i].visible == false)
+                continue;
+            console.log(i);
+            var svgns = "http://www.w3.org/2000/svg";
+            var circle = document.createElementNS(svgns, "circle");
+            circle.setAttributeNS(null, "cx", (info[i].coords.x / info[i].scale) * scale);
+            circle.setAttributeNS(null, "cy", (info[i].coords.y / info[i].scale) * scale);
+            circle.setAttributeNS(null, "r", 5);
+            circle.setAttributeNS(null, "pid", info[i].id);
+            circle.setAttributeNS(null, "style", "fill: yellow; stroke: green; stroke-width: 1px;");
+            circle.addEventListener("mouseover", function (e) {
+                e.currentTarget.style.fill = "grey";
+            });
+            var txt = document.createElementNS(NS, "text");
+            var textY = (info[i].coords.y / info[i].scale) * scale - (20 / info[i].scale) * scale;
+            txt.setAttributeNS(null, "x", (info[i].coords.x / info[i].scale) * scale);
+            txt.setAttributeNS(null, "y", textY);
+            txt.setAttributeNS(null, "font-size", "20");
+            txt.setAttributeNS(null, "pid", info[i].id);
+            txt.innerHTML = info[i].properties.Name;
+            svg.appendChild(txt);
+            document.getElementById("svg").appendChild(circle);
+        }
+    }
+    configurationDisplayToggle = function () {
+        if (document.getElementById("configurationDisplaySign").innerHTML == "▼") {
+
+            document.getElementById("configurationDisplaySign").innerHTML = "▲";
+            document.getElementById("configurationDiv").style.display = "block";
+        } else {
+            document.getElementById("configurationDisplaySign").innerHTML = "▼";
+            document.getElementById("configurationDiv").style.display = "none";
+        }
+    }
+
+    openTabArea = function (evt, cityName) {
+
+        if (cityName == "areaDiv")
+            document.getElementById("imageArea").style.display = "none";
+        else
+            document.getElementById("imageArea").style.display = "flex";
+
+        var i, tabcontent, tablinks;
+
+        tabcontent = document.getElementsByClassName("tabcontent");
+        for (i = 0; i < tabcontent.length; i++) {
+            tabcontent[i].style.display = "none";
+        }
+
+
+        tablinks = document.getElementsByClassName("tablinks");
+        for (i = 0; i < tablinks.length; i++) {
+            tablinks[i].className = tablinks[i].className.replace(" active", "");
+        }
+
+        document.getElementById(cityName).style.display = "block";
+        evt.currentTarget.className += " active";
+    }
+
+
+    reloadPage = function () {
+        location.reload();
+    }
+
+    areaDisplayToggle = function () {
+        // console.log("areaDisplayToggle");
+        /*if (document.getElementById("areaDisplaySign").innerHTML == "▼") {
+
+            document.getElementById("areaDisplaySign").innerHTML = "▲";
+            document.getElementById("areaDisplayDiv").style.display = "block";
+        } else {
+            document.getElementById("areaDisplaySign").innerHTML = "▼";
+            document.getElementById("areaDisplayDiv").style.display = "none";
+        }*/
+    }
+
+    deviceAddDisplayToggle = function () {
+
+    }
+
+    searchDisplayToggle = function () {
+
+    }
+
+    searchResultDisplayToggle = function () {
+
+    }
+
+
+    checkFileExists = function (url) {
+        return fetch(url, {method: 'HEAD'})
+            .then(response => {
+                return response.ok;
+            })
+            .catch(() => {
+                return false;
+            });
+    }
+
+    changeBGImageSource = function (fileName) {
+        deleteElements();
+
+
+        clearVisiblePoints();
+        var svgContainer = document.getElementById("svg");
+        var imageSource = fileName.name;
+        const fileUrl = "url(" + imageSource + ")";
+        checkFileExists(fileUrl)
+            .then(exists => {
+                if (exists) {
+                    console.log('The file exists!');
+                } else {
+                    console.log('The file does not exist!');
+                    //// TODO: to set flag to true/false if it is found??????
+                }
+            })
+            .catch(error => {
+                console.error('An error occurred:', error);
+            });
+        // img.src = "url(" + imageSource + ")";
+        img.src = imageSource;
+        //read size of image and ....
+        svgContainer.style.backgroundImage = "url(" + img.src + ")";
+        svgContainer.style.width = img.width;
+        svgContainer.style.height = img.height;
+        scale = 1;
+        if (changeBGTrigger) {
+            var event = new Event('change');
+            changeBGTrigger = false;
+            document.getElementById("area").dispatchEvent(event)
+        }
+    }
+
+    changeImageSource = function () {
+
+        deleteElements();
+        clearVisiblePoints();
+        var svgContainer = document.getElementById("svg");
+        var imageSource = document.getElementById("area").value;
+        const fileUrl = "url(" + imageSource + ")";
+        checkFileExists(fileUrl)
+            .then(exists => {
+                if (exists) {
+                    console.log('The file exists!');
+                } else {
+                    console.log('The file does not exist!');
+                    //// TODO: to set flag to true/false if it is found??????
+                }
+            })
+            .catch(error => {
+                console.error('An error occurred:', error);
+            });
+        // img.src = "url(" + imageSource + ")";
+        img.src = imageSource;
+        //read size of image and ....
+        svgContainer.style.backgroundImage = "url(" + img.src + ")";
+        svgContainer.style.width = img.width;
+        svgContainer.style.height = img.height;
+        scale = 1;
+        if (changeBGTrigger) {
+            var event = new Event('change');
+            changeBGTrigger = false;
+            document.getElementById("area").dispatchEvent(event)
+        }
+    }
+
+    inc = function () {
+        scale = scale * 2;
+        let svgContainer = document.getElementById("svg");
+        let imgUrl = svgContainer.style.backgroundImage.slice(5, -2);
+        let image = new Image();
+        image.src = imgUrl;
+        svgContainer.style.width = image.width * scale + "px";
+        svgContainer.style.height = image.height * scale + "px";
+        image.width = image.width * scale;
+        image.height = image.height * scale;
+        svgContainer.style.backgroundImage = "url(" + image + ")";
+        console.log(svgContainer.style.width);
+        addCircles();
+    }
+
+    dec = function () {
+        scale = scale / 2;
+        let svgContainer = document.getElementById("svg");
+        let imgUrl = svgContainer.style.backgroundImage.slice(5, -2);
+        let image = new Image();
+        image.src = imgUrl;
+        svgContainer.style.width = image.width * scale + "px";
+        svgContainer.style.height = image.height * scale + "px";
+        image.width = image.width * scale;
+        image.height = image.height * scale;
+        svgContainer.style.backgroundImage = "url(" + image + ")";
+        console.log(svgContainer.style.width);
+        addCircles();
+        /* let currentBackgroundSize = window.getComputedStyle(svgContainer).getPropertyValue("background-size");
+		let newBackgroundSize = parseInt(currentBackgroundSize) * 2;
+		svgContainer.style.backgroundSize = newBackgroundSize + "px";
+		console.log(svgContainer.style.backgroundSize);
+		*/
+    }
+
+    var foundElements = [];
+
+    search = function () {
+        table.innerHTML = "";
+        foundElements = [];
+        clearSearchResults();
+        deleteElements();
+        document.getElementById("searchResults").innerHTML = "";
+
+
+        /****/
+        keys = [];
+
+        for (let k = 0; k < info.length; k++) {
+            let found = 0;
+            if (!info[k].goal || info[k].goal && info[k].goal != "conf.img") {
+                for (j = 0; j <= searchProperties; j++) {
+                    let propNameTemp = "propName" + j + "Search";
+                    let propValueTemp = "propValue" + j + "Search";
+                    if (!document.getElementById([propNameTemp]) || !document.getElementById([propValueTemp])) {
+                        console.log("Feld muss eingetragen werden:" + document.getElementById([propNameTemp]) + "," + propNameTemp);
+                        return false;
+                    }
+
+                    let propNameTempVal = document.getElementById([propNameTemp]).value;
+                    let propValueTempVal = document.getElementById([propValueTemp]).value;
+                    console.log(propNameTempVal + " " + propValueTempVal);
+                    let output = "";
+                    if (info[k] && info[k].properties) {
+                        Object.keys(info[k].properties).forEach(function (key) {
+
+                            if (propNameTempVal == key && info[k].properties[key].indexOf(propValueTempVal) != -1) { //todo:::: check iside or full equility
+                                found++;
+                                return;
+                            }
+                        });
+                    }
+                }
+//todo: add/or/not to filter
+//reset/delete attributes for searching.
+                if (found == searchProperties + 1) { // because index starts from 0
+                    foundElements.push(info[k]);
+
+
+                }
+            }
+        }
+
+
+        for (let k = 0; k < foundElements.length; k++) {
+            if (foundElements[k].properties)
+                Object.keys(foundElements[k].properties).forEach(function (key) {
+                    if (!keys.includes(key))
+                        keys.push(key);
+                })
+        }
+
+        let row = table.insertRow();
+
+        // generate TH row {
+        let th = document.createElement("th");
+        let text = document.createTextNode("");
+        th.appendChild(text);
+        row.appendChild(th);
+
+        th = document.createElement("th");
+        text = document.createTextNode("Area name");
+        th.appendChild(text);
+        row.appendChild(th);
+
+
+//todo: move down and check only keys in search results
+        keys.forEach(function (key) {
+            th = document.createElement("th");
+            text = document.createTextNode(key);
+            th.appendChild(text);
+            row.appendChild(th);
+        });
+
+
+        th = document.createElement("th");
+        text = document.createTextNode("Operation");
+        th.appendChild(text);
+        row.appendChild(th);
+        // /////
+
+        for (let k = 0; k < foundElements.length; k++) {
+            let row = table.insertRow();
+            let cell = row.insertCell();
+            var x = document.createElement("input");
+            x.setAttribute("type", "checkbox");
+            cell.appendChild(x);
+            cell = row.insertCell();
+            text = document.createTextNode(foundElements[k].areaName);
+            cell.appendChild(text);
+
+            for (h = 0; h < keys.length; h++) {
+                let inlist = false;
+                Object.keys(foundElements[k].properties).forEach(function (key) {
+                    if (keys[h] == key) {
+                        inlist = true;
+                        cell = row.insertCell();
+                        text = document.createTextNode(foundElements[k].properties[key]);
+                        cell.appendChild(text);
+                    }
+                })
+
+                if (!inlist) {
+                    cell = row.insertCell();
+                    text = document.createTextNode("");
+                    cell.appendChild(text);
+                }
+            }
+
+
+            cell = row.insertCell();
+            deleteElem = document.createElement('span')
+            deleteElem.innerHTML = "🗙";
+            deleteElem.classList.add("cancelSign");
+            deleteElem.addEventListener("click", function () {
+                deleteCircle(foundElements[k].id);
+
+                search();
+
+            })
+            cell.appendChild(deleteElem);
+
+
+            //todo: check on
+            row.addEventListener("click", function () {
+                if (this.children && this.children[0] && this.children[0].children[0] && this.children[0].children[0].checked) {
+// delete this temporary part
+                    for (iii2 = 1; iii2 < this.parentElement.children.length; iii2++) {
+                        this.parentElement.children[iii2].children[0].children[0].checked = false;
+                        deleteElements();
+                        clearVisiblePoints();
+                    }
+////////
+                    if (document.getElementById('area') && document.getElementById('area').options[document.getElementById('area').selectedIndex].innerHTML != this.children[1].innerHTML) {
+                        deleteElements();
+                        clearVisiblePoints();
+                        var event = new Event('change');
+                        document.getElementById("area").dispatchEvent(event)
+                    }
+                    this.children[0].children[0].checked = true;
+                    scale = foundElements[k].scale;
+                    addCircle(foundElements[k].id);
+
+                    // to find out why the image is not loaded immedeately
+                    setTimeout(function () {
+                        inc();
+                    }, 500);
+                    setTimeout(function () {
+                        dec();
+                    }, 500);
+
+                } else {
+                    deleteCircle(foundElements[k].id);
+                    foundElements[k].visible = false;
+
+                }
+            }, false);
+        }
+
+        document.getElementById("searchResults").appendChild(table);
+        const getCellValue = (tr, idx) => tr.children[idx].innerText || tr.children[idx].textContent;
+        const comparer = (idx, asc) => (a, b) => ((v1, v2) =>
+                v1 !== '' && v2 !== '' && !isNaN(v1) && !isNaN(v2) ? v1 - v2 : v1.toString().localeCompare(v2)
+        )(getCellValue(asc ? a : b, idx), getCellValue(asc ? b : a, idx));
+        // do the work...
+        document.querySelectorAll('th').forEach(th => th.addEventListener('click', (() => {
+            const table = th.closest('table');
+            Array.from(table.querySelectorAll('tr:nth-child(n+2)'))
+                .sort(comparer(Array.from(th.parentNode.children).indexOf(th), this.asc = !this.asc))
+                .forEach(tr => table.appendChild(tr));
+        })));
+
+        if (!document.getElementById("searchResults").innerHTML)
+            document.getElementById("searchResults").innerHTML = "Nichts ist gefunden";
+    };
+
+    clearVisiblePoints = function () {
+
+        for (i = 0; i < info.length; i++) {
+            info[i].visible = false;
+        }
+    }
+
+    submitImageAddition = function () {
+
+        let codeRow = "image";
+        let string = "";
+        let fileName = document.getElementById("myfile");
+        let type = document.getElementById("type").value;
+        if (!fileName || !fileName.files || fileName.files.length == 0) {
+            return;
+        }
+        if (!type || !type || type.length == 0) type = fileName.files[0].name;
+        string = string.concat(codeRow, ";", type, ";", fileName.files[0].name);
+        console.log(string);
+        let filename = fileName.files[0].name;
+        json = {
+            id: [Date.now()],
+            goal: "conf.img",
+            type: [type],
+            name: [codeRow], // needed ?
+            filename: [filename],
+        };
+        info.push(json);
+        document.getElementById("type").value = "";
+        document.getElementById("myfile").value = null;
+        let newOption = "";
+        let select = document.getElementById("area");
+        while (select.length > 0) select.remove(0);
+        for (i = 0; i < info.length; i++) {
+            if (info[i].goal && info[i].goal == "conf.img") {
+                newOption = document.createElement("option");
+                optionText = document.createTextNode(info[i].type);
+                newOption.appendChild(optionText);
+                newOption.setAttribute("value", info[i].filename);
+                select.appendChild(newOption);
+            }
+        }
+    };
+
+    changeFile = function () {
+        var input = document.getElementById("myfile");
+        var fReader = new FileReader();
+        changeBGImageSource(input.files[0]);
+        fReader.readAsDataURL(input.files[0]);
+        fReader.onloadend = function (event) {
+            var type = document.getElementById("type");
+            if (!type.value) {
+                let fileName = document.getElementById("myfile");
+                let name = fileName.files[0].name;
+                type.value = name.substring(0, name.lastIndexOf("."));
+            }
+        };
+    };
+
+    deleteChildren = function (elementId) {
+        let element = document.getElementById(elementId);
+        while (element.length > 0) element.remove(0);
+    }
+
+    deleteElements = function () {
+        children = svg.querySelectorAll("*");
+        for (i = 0; i < children.length; i++) {
+            svg.removeChild(children[i]);
+        }
+
+        results = document.getElementById("searchResults");
+        if (results && results.children)
+            for (iii = 1; iii < results.children.length; iii++) {
+                results.children[iii].children[0].children[0].checked = false;
+
+            }
+    };
+
+    selectSearch = function (item, index, arr) {
+        arr[index] = item * 10;
+    }
+
+    clickOnArea = function (evt) {
+        var op = "";
+        var value = document.getElementsByName("operation");
+        for (var radio of value) {
+            if (radio.checked) {
+                op = radio.value;
+            }
+        }
+    };
+
+
+    addCircle = function (id) {
+        (svg = document.querySelector("svg")), (pt = svg.createSVGPoint());
+        (svg = document.getElementById("svg")), (NS = svg.getAttribute("xmlns"));
+
+        for (i = 0; i < info.length; i++) {
+            if (info[i].id == id) {
+                info[i].visible = true;
+                const fileUrl = info[i].area;
+                checkFileExists(fileUrl)
+                    .then(exists => {
+                        if (exists) {
+                            console.log('The file exists!');
+                        } else {
+                            console.log('The file does not exist!');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('An error occurred:', error);
+                    });
+
+                let svgContainer = document.getElementById("svg");
+                let image = new Image();
+                img.src = fileUrl;
+                //read size of image and ....
+                svgContainer.style.backgroundImage = "url(" + img.src + ")";
+                svgContainer.style.width = (img.width / info[i].scale) * scale;
+                svgContainer.style.height = (img.height / info[i].scale) * scale;
+                var svgns = "http://www.w3.org/2000/svg";
+                var circle = document.createElementNS(svgns, "circle");
+                circle.setAttributeNS(null, "cx", (info[i].coords.x / info[i].scale) * scale);
+                circle.setAttributeNS(null, "cy", (info[i].coords.y / info[i].scale) * scale);
+                circle.setAttributeNS(null, "r", 5);
+                circle.setAttributeNS(null, "pid", info[i].id);
+                circle.setAttributeNS(null, "style", "fill: yellow; stroke: green; stroke-width: 1px;");
+                circle.addEventListener("mouseover", function (e) {
+                    e.currentTarget.style.fill = "grey";
+                });
+
+                var txt = document.createElementNS(NS, "text");
+                var textY = (info[i].coords.y / info[i].scale) * scale - (20 / info[i].scale) * scale;
+                txt.setAttributeNS(null, "x", (info[i].coords.x / info[i].scale) * scale);
+                txt.setAttributeNS(null, "y", textY);
+                txt.setAttributeNS(null, "font-size", "20");
+                txt.setAttributeNS(null, "pid", info[i].id);
+                //txt.setAttributeNS(null, "visible", true);
+                txt.innerHTML = info[i].properties.Name;
+                svg.appendChild(txt);
+                document.getElementById("svg").appendChild(circle);
+            }
+        }
+    }
+
+
+    deleteCircle = function (id) {
+        children = svg.querySelectorAll("*");
+        for (i = 0; i < children.length; i++) {
+            if (children[i].getAttribute("pid") == id)
+                svg.removeChild(children[i]);
+        }
+        for (ig = 0; ig < info.length; ig++) {
+            if (info[ig].id == id) {
+                info.splice(ig, 1);
+                break;
+            }
+        }
+
+    }
+
+    clearSearchResults = function () {
+        let children = document.querySelectorAll(".resultTable tbody").innerHTML = "";
+    }
+
+
+    onMouseClick = function (e) {
+        (svg = document.querySelector("svg")), (pt = svg.createSVGPoint());
+        (svg = document.getElementById("svg")), (NS = svg.getAttribute("xmlns"));
+        // pass event coordinates
+        pt.x = e.clientX;
+        pt.y = e.clientY;
+        // transform to SVG coordinates
+        svgP = pt.matrixTransform(svg.getScreenCTM().inverse());
+
+        if (!newObject && svg.lastChild) {
+            svg.removeChild(svg.lastChild);
+            svg.removeChild(svg.lastChild);
+        }
+        var txt = document.createElementNS(NS, "text");
+        var textY = svgP.y - 20;
+        txt.setAttributeNS(null, "x", svgP.x);
+        txt.setAttributeNS(null, "y", textY);
+        txt.setAttributeNS(null, "font-size", "30");
+        txt.setAttributeNS(null, "pid", 777);
+        txt.innerHTML = document.getElementById("propValue0").value;
+        svg.appendChild(txt);
+        descrV = document.getElementById("propValue0").value;
+        area = document.getElementById("area").value;
+        var svgns = "http://www.w3.org/2000/svg";
+        var circle = document.createElementNS(svgns, "circle");
+        circle.setAttributeNS(null, "cx", svgP.x);
+        circle.setAttributeNS(null, "cy", svgP.y);
+        circle.setAttributeNS(null, "r", 5);
+        circle.setAttributeNS(null, "pid", 777);
+        circle.setAttribute("name", descrV);
+        circle.setAttributeNS(null, "style", "fill: black; stroke: black; stroke-width: 1px;");
+        circle.addEventListener("mouseover", function (e) {
+            colorGlobal = e.currentTarget.style.fill;
+            e.currentTarget.style.fill = "grey";
+        });
+        circle.addEventListener("mouseout", function (e) {
+            e.currentTarget.style.fill = colorGlobal;
+        });
+        document.getElementById("svg").appendChild(circle);
+        newObject = false;
+    }
+
+    onBlur = function () {
+    }
+
+
+    init = function () {
+        (svg = document.querySelector("svg")),
+            svg.addEventListener("click", onMouseClick);
+
+        table.classList.add("resultTable");
+        select = document.getElementById("selectElementId");
+        for (var i = 0; i < point.length; i++) {
+            var opt = document.createElement("option");
+            opt.value = i;
+            opt.innerHTML = i;
+            select.appendChild(opt);
+        }
+    }
+
+
+    //todo: to make it abstract
+    addProperty = function () {
+        let properties = document.getElementById("properties");
+        let input = document.createElement("input");
+        input.id = "propName" + ++props;
+        input.placeholder = "Eigenschaft";
+        properties.appendChild(input);
+        input = document.createElement("input");
+        input.id = "propValue" + props;
+        input.placeholder = "Wert";
+        properties.appendChild(input);
+        input = document.createElement("br");
+        properties.appendChild(input);
+    }
+
+    addPropertySearch = function () {
+        searchProperties++;
+        let properties = document.getElementById("propertiesSearch");
+        let input = document.createElement("input");
+        input.placeholder = "Eigenschaft";
+        input.id = "propName" + searchProperties + "Search";
+        properties.appendChild(input);
+        input = document.createElement("input");
+        input.placeholder = "Wert";
+        input.id = "propValue" + searchProperties + "Search";
+        properties.appendChild(input);
+        input = document.createElement("br");
+        properties.appendChild(input);
+    }
+
+    exportData = function () {
+        let output = "";
+        for (var i = 0; i < info.length; i++) {
+            output = output + JSON.stringify(info[i]) + "\n";
+        }
+        jsonTmp = JSON.stringify(info);
+        var downloadLink = document.createElement("a");
+        let csv = jsonTmp;
+        var blob = new Blob(["\ufeff", csv]);
+        var url = URL.createObjectURL(blob);
+        downloadLink.href = url;
+        let fileName = document.getElementById("exportFileName").value;
+        if (!fileName)
+            fileName = "TSG_app_init.json" //by default
+        downloadLink.download = fileName;
+        document.body.appendChild(downloadLink);
+        downloadLink.click();
+        document.body.removeChild(downloadLink);
+    }
+
+    importData = function () {
+        var input = document.getElementById("Import");
+        var fReader = new FileReader();
+        let fileName = input.files[0];
+        const options = {weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'};
+
+        let lastModifiedDate = new Date(fileName.lastModified).toLocaleDateString('de-DE', options);
+        let NS = svg.getAttribute("xmlns")
+        var span = document.createElementNS(NS, "span");
+        span.innerHTML = lastModifiedDate;
+        document.getElementById("fileInfo").value = "Aktualiziert:" + lastModifiedDate;
+
+        //TODO: delete
+        fReader.readAsDataURL(fileName);
+        fReader.onloadend = function (event) { /////////////////check onloadeNd!!!!
+            fileName = document.getElementById("Import");
+            let name = fileName.files[0].name;
+            let select = document.getElementById("area");
+            while (select.length > 0) select.remove(0);
+            info = [];
+            d3.json(name).then(function (data) {
+                for (i = 0; i < data.length; i++) {
+                    info.push(data[i]);
+                    if (data[i] && data[i].goal && data[i].goal == "conf.img") {
+                        let newOption = "";
+                        newOption = document.createElement("option");
+                        optionText = document.createTextNode(data[i].type);
+                        newOption.appendChild(optionText);
+                        newOption.setAttribute("value", data[i].filename);
+                        select.appendChild(newOption);
+                    }
+                }
+            });
+            if (document.getElementById('area').getElementsByTagName('option').length > 0) {
+                document.getElementById('area').getElementsByTagName('option')[0].selected = 'selected'
+                var event = new Event('change');
+                document.getElementById("area").dispatchEvent(event)
+            }
+
+        }
+        changeImageSource();
+        searchDisplayToggle();
+        searchResultDisplayToggle();
+
+        setTimeout(function () {
+            configurationDisplayToggle(); // maybe it is redundant. it clears more space for the app, but makes the app not user friendly 
+        }, 5000);
+
+    }
+
+    addObject = function () {
+        (svg = document.querySelector("svg")), (pt = svg.createSVGPoint());
+        (svg = document.getElementById("svg")), (NS = svg.getAttribute("xmlns"));
+
+        var txt = document.createElementNS(NS, "text");
+        var textY = svgP.y - 20;
+let id = Date.now();
+       
+
+
+        txt.setAttributeNS(null, "x", svgP.x);
+        txt.setAttributeNS(null, "y", textY);
+        txt.setAttributeNS(null, "font-size", "30");
+        txt.setAttributeNS(null, "pid", json.id);
+
+        area = document.getElementById("area").value;
+        let properties = {};
+        for (i = 0; i <= props; i++) {
+            let propNameTemp = "propName" + i;
+            let propValueTemp = "propValue" + i;
+            let propNameTempVal = document.getElementById(propNameTemp).value;
+            let propValueTempVal = document.getElementById(propValueTemp).value;
+            if (propNameTempVal)
+                properties[propNameTempVal] = propValueTempVal;
+        }
+
+        areaName = document.getElementById("area").options[document.getElementById("area").selectedIndex].text;
+
+ json = {
+            id: id,
+            area: area,
+            areaName: areaName,
+            properties: properties,
+            scale: scale,
+            coords: {x: svgP.x, y: svgP.y}
+        };
+        var colorGlobal = "black";
+        info.push(json);
+        var svgns = "http://www.w3.org/2000/svg";
+        var circle = document.createElementNS(svgns, "circle");
+        circle.setAttributeNS(null, "cx", svgP.x);
+        circle.setAttributeNS(null, "cy", svgP.y);
+        circle.setAttributeNS(null, "r", 5);
+        circle.setAttributeNS(null, "pid", json.id);
+        circle.setAttribute("name", descrV);
+        circle.setAttributeNS(null, "style", "fill: black; stroke: black; stroke-width: 1px;");
+        circle.addEventListener("mouseover", function (e) {
+            colorGlobal = e.currentTarget.style.fill;
+            e.currentTarget.style.fill = "grey";
+            svg = document.getElementById("info").value = "Information über das Gerät " + e.currentTarget.attributes.name.nodeValue;
+        });
+        circle.addEventListener("mouseout", function (e) {
+            e.currentTarget.style.fill = colorGlobal;
+            svg = document.getElementById("info").value = "";
+        });
+        newObject = true;
+    }
+
+    //exit prevail
+    window.addEventListener('beforeunload', function (e) {
+        //todo: check to prevent lose of data
+        // console.log("exit");
+        e.preventDefault();
+        e.returnValue = '!!!';
+        let text = "";
+        if (confirm("Press a button!") == true) {
+            text = "You pressed OK";
+        } else {
+            text = "You canceled";
+        }
+        console.log(text);
+        // alert("hast du !!")
+        //
+        //  e.returnValue = '!!!';
+    });
+
+
+    init();
+    areaDisplayToggle();
+    deviceAddDisplayToggle();
+    searchDisplayToggle();
+    searchResultDisplayToggle();
+    addCircles(); //for future features
+</script>
+</body>
+</html>
